@@ -1,19 +1,24 @@
 // # Mail
 // Handles sending email for Ghost
-var _          = require('lodash'),
-    Promise    = require('bluebird'),
-    nodemailer = require('nodemailer'),
-    validator  = require('validator'),
-    config     = require('../config'),
-    i18n       = require('../i18n');
+var _               = require('lodash'),
+    Promise         = require('bluebird'),
+    nodemailer      = require('nodemailer'),
+    validator       = require('validator'),
+    config          = require('../config'),
+    i18n            = require('../i18n'),
+    apiTransports   = require('./apiTransports');
 
 function GhostMailer() {
     var transport = config.mail && config.mail.transport || 'direct',
         options = config.mail && _.clone(config.mail.options) || {};
 
     this.state = {};
+    if (transport === 'API') {
+        this.transport = apiTransports.createTransport(options);
+    } else {
+        this.transport = nodemailer.createTransport(transport, options);
+    }
 
-    this.transport = nodemailer.createTransport(transport, options);
 
     this.state.usingDirect = transport === 'direct';
 }
